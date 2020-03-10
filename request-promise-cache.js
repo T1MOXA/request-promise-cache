@@ -53,10 +53,11 @@ function promisifyAndCachifyRequest (r, options) {
             }
 
             var get = (params.method || 'get').toLowerCase() === 'get';
+            var post = (params.method || 'post').toLowerCase() === 'post';
 
-            if(get && cacheKey) {
+            if((get || post) && cacheKey) {
                 var hit = r._cache.get(cacheKey);
-                if (hit) {
+                if (hit !== null) {
                     // only works if resolveWithFullResponse=true
                     // since body would be a primitive string and can't add property to it.
                     // and I don't want to use `new String(body)`
@@ -83,7 +84,7 @@ function promisifyAndCachifyRequest (r, options) {
                 if (error || response.statusCode < 200 || response.statusCode > 299) {
                     reject(error || response);
                 } else {
-                    cacheKey && get && r._cache.set(cacheKey, ret, {ttl: cacheTTL, limit: cacheLimit});
+                    cacheKey && (get || post) && r._cache.set(cacheKey, ret, {ttl: cacheTTL, limit: cacheLimit});
                     resolve(ret);
                 }
                 delete r._loading[cacheKey];
@@ -116,4 +117,3 @@ requestPromiseCache.use = function (CustomPromise) {
 };
 
 module.exports = requestPromiseCache;
-
