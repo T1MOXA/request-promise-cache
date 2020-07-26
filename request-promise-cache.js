@@ -75,13 +75,10 @@ function promisifyAndCachifyRequest (r, options) {
                 r._loading[cacheKey] = cacheEntry;
             }
 
-            var resolveWithFullResponse = params.resolveWithFullResponse;
-            delete params.resolveWithFullResponse;
-
             r(params, function(error, response, body) {
-                var ret = resolveWithFullResponse ? response : body;
+                var ret = params.resolveWithFullResponse ? response : body;
 
-                if (error || response.statusCode < 200 || response.statusCode > 299) {
+                if (error || params.simple && (response.statusCode < 200 || response.statusCode > 299)) {
                     reject(error || response);
                 } else {
                     cacheKey && (get || post) && r._cache.set(cacheKey, ret, {ttl: cacheTTL, limit: cacheLimit});
